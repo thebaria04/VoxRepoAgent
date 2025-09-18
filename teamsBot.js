@@ -8,6 +8,8 @@ const {
 const { version } = require("@microsoft/agents-hosting/package.json");
 const { DefaultAzureCredential } = require("@azure/identity");
 const { AIProjectClient } = require("@azure/ai-projects");
+const axios = require("axios");
+const qs = require("qs");
 
 // Bot setup
 const downloader = new AttachmentDownloader();
