@@ -51,6 +51,11 @@ teamsBot.conversationUpdate("membersAdded", async (context, state) => {
   );
 });
 
+console.log('Trying to authenticate to azure ai foundry');
+console.log('AZURE_TENANT_ID', process.env.AZURE_TENANT_ID);
+console.log('AZURE_CLIENT_ID', process.env.AZURE_CLIENT_ID);
+console.log('AZURE_CLIENT_SECRET', process.env.AZURE_CLIENT_SECRET);
+
 // Azure AI Foundry integration
 const AZURE_ENDPOINT = "https://voxrepofoundry.services.ai.azure.com/api/projects/VoxRepoFoundryAI";
 const AGENT_ID = "asst_2nwCGYhb5MJTLEl5Vfna32SL";
@@ -58,6 +63,8 @@ const project = new AIProjectClient(
     AZURE_ENDPOINT,
     new DefaultAzureCredential()
 );
+
+
 
 teamsBot.activity(ActivityTypes.Message, async (context, state) => {
   try {
