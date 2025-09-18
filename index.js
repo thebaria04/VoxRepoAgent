@@ -11,6 +11,8 @@ const { teamsBot } = require("./teamsBot");
 // Create authentication configuration
 const authConfig = loadAuthConfigFromEnv();
 console.log(authConfig.clientId ? `Loaded MicrosoftAppId ${authConfig.clientId} from environment` : 'MicrosoftAppId not found in environment');
+console.log(authConfig.clientSecret ? `Loaded MicrosoftAppPassword ${authConfig.clientSecret} from environment` : 'MicrosoftAppPassword not found in environment');
+console.log(authConfig.tenantId ? `Loaded MicrosoftAppTenantId ${authConfig.tenantId} from environment` : 'MicrosoftAppTenantId not found in environment');
 
 // Create adapter
 const adapter = new CloudAdapter(authConfig);
