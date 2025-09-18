@@ -10,12 +10,15 @@ const { teamsBot } = require("./teamsBot");
 
 // Create authentication configuration
 const authConfig = loadAuthConfigFromEnv();
+console.log(authConfig.clientId ? `Loaded MicrosoftAppId ${authConfig.clientId} from environment` : 'MicrosoftAppId not found in environment');
 
 // Create adapter
 const adapter = new CloudAdapter(authConfig);
+console.log('Created CloudAdapter');
+console.log('Adapter created with appId:', authConfig.clientId);
 
 adapter.onTurnError = async (context, error) => {
-  console.error(`[onTurnError] unhandled error:`, error); // log the whole error
+  console.error("[onTurnError] unhandled error:", error); // log the whole error object
   if (context.activity.type === "message") {
     await context.sendActivity(`The bot encountered an unhandled error:\n ${error && error.message ? error.message : error}`);
     await context.sendActivity("To continue to run this bot, please fix the bot source code.");
