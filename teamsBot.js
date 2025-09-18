@@ -194,15 +194,23 @@ async function handleCallEvent(reqbody) {
         console.log(`Incoming call detected with id: ${call.id}`);
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
-      } 
-      else if (changeType === "updated" && call.state === "established") {
-        
-        console.log(`Call ${call.id} established.`);
-        console.log('Subscribing to audio stream...');
-        // Subscribe to the audio stream        
-        const audioStream = await subscribeToAudioStream(call.id, accessToken);
-        console.log('Subscribed to audio stream:', audioStream);
-      } 
+      
+        // Wait for 30 seconds
+        await new Promise(resolve => setTimeout(resolve, 30000));
+
+          if (changeType === "updated" && call.state === "established") {
+            
+            console.log(`Call ${call.id} established.`);
+            console.log('Subscribing to audio stream...');
+            // Subscribe to the audio stream        
+            const audioStream = await subscribeToAudioStream(call.id, accessToken);
+            console.log('Subscribed to audio stream:', audioStream);
+          }
+          else
+          {
+            console.log(`Call ${call.id} not established yet. Current state: ${call.state}`);
+          } 
+        }
       else {
         console.log(`Unhandled call state: ${call.state}, changeType: ${changeType}`);
       }
