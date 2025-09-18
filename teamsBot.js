@@ -194,9 +194,6 @@ async function handleCallEvent(reqbody) {
         console.log(`Incoming call detected with id: ${call.id}`);
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
-      
-        // Wait for 30 seconds
-        await new Promise(resolve => setTimeout(resolve, 30000));
 
           if (changeType === "updated" && call.state === "established") {
             
