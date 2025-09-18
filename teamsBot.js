@@ -27,9 +27,9 @@ const project = new AIProjectClient(
     new DefaultAzureCredential()
 );
 
-const tenantId = process.env.TENANT_ID;
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
+const tenantId = process.env.tenantId;
+const clientId = process.env.clientId;
+const clientSecret = process.env.clientSecret;
 
 // Get access token for Microsoft Graph
 async function getAccessToken() {
@@ -175,13 +175,10 @@ async function handleCallEvent(reqbody) {
 
         await answerCall(call.id, botCallbackUri, accessToken);
         await playPrompt(call.id, accessToken);
+        console.log(`Call ${call.id} answered and prompt played.`);
 
-        res.sendStatus(202);
-        return;
       } catch (error) {
         console.error("Error handling call:", error.response?.data || error.message);
-        res.status(500).send("Failed to answer call and play prompt");
-        return;
       }
     }
   }
