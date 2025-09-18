@@ -19,40 +19,6 @@ const teamsBot = new AgentApplication({
   fileDownloaders: [downloader],
 });
 
-teamsBot.message("/reset", async (context, state) => {
-  state.deleteConversationState();
-  await context.sendActivity("Ok I've deleted the current conversation state.");
-});
-
-teamsBot.message("/count", async (context, state) => {
-  const count = state.conversation.count ?? 0;
-  await context.sendActivity(`The count is ${count}`);
-});
-
-teamsBot.message("/diag", async (context, state) => {
-  await state.load(context, storage);
-  await context.sendActivity(JSON.stringify(context.activity));
-});
-
-teamsBot.message("/state", async (context, state) => {
-  await state.load(context, storage);
-  await context.sendActivity(JSON.stringify(state));
-});
-
-teamsBot.message("/runtime", async (context, state) => {
-  const runtime = {
-    nodeversion: process.version,
-    sdkversion: version,
-  };
-  await context.sendActivity(JSON.stringify(runtime));
-});
-
-teamsBot.conversationUpdate("membersAdded", async (context, state) => {
-  await context.sendActivity(
-    `Hi there! I'm an echo bot running on Agents SDK version ${version} that will echo what you said to me.`
-  );
-});
-
 // Azure AI Foundry integration
 const AZURE_ENDPOINT = "https://voxrepofoundry.services.ai.azure.com/api/projects/VoxRepoFoundryAI";
 const AGENT_ID = "asst_2nwCGYhb5MJTLEl5Vfna32SL";
@@ -226,5 +192,3 @@ module.exports = {
   handleCallEvent,
 };
 
-
-module.exports.teamsBot = teamsBot;
