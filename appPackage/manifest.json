@@ -1,0 +1,62 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.21/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.21",
+    "version": "1.0.0",
+    "id": "acd584fb-a7a8-4192-b904-b9516f3dd7af",
+    "developer": {
+        "name": "My App, Inc.",
+        "websiteUrl": "https://www.example.com",
+        "privacyUrl": "https://www.example.com/privacy",
+        "termsOfUseUrl": "https://www.example.com/termofuse"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
+    },
+    "name": {
+        "short": "Testlocal",
+        "full": "full name for Test"
+    },
+    "description": {
+        "short": "short description for Test",
+        "full": "full description for Test"
+    },
+    "accentColor": "#FFFFFF",
+    "bots": [
+        {
+            "botId": "ae222750-1bf7-4721-8407-175cfc449bac",
+            "scopes": [
+                "personal",
+                "team",
+                "groupChat"
+            ],
+            "supportsCalling": true,
+            "supportsVideo": true,
+            "supportsFiles": false,
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                  "scopes": ["personal", "team", "groupChat"],
+                  "commands": [
+                      {
+                          "title": "Hi",
+                          "description": "Say hi to the bot."
+                      },
+                      {
+                          "title": "/reset",
+                          "description": "Delete conversation state."
+                      }
+                  ]
+                }
+            ]
+        }
+    ],
+    "composeExtensions": [],
+    "configurableTabs": [],
+    "staticTabs": [],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": []
+}
