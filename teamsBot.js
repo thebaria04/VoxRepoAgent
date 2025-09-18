@@ -128,4 +128,35 @@ teamsBot.activity(ActivityTypes.Message, async (context, state) => {
   }
 });
 
+async function handleCallEvent(reqBody) {
+  console.log("Received call event:", JSON.stringify(reqBody, null, 2));
+  
+  const eventType = reqBody.eventType || reqBody.type; // Graph calling event type varies
+  
+  switch(eventType) {
+    case "incomingCall":
+      // Accept or reject call logic here
+      console.log("Incoming call received.");
+      // You could trigger further actions, like answering the call via Graph API
+      break;
+
+    case "callConnected":
+      console.log("Call connected.");
+      break;
+
+    case "callDisconnected":
+      console.log("Call disconnected.");
+      break;
+
+    default:
+      console.log(`Unhandled call event type: ${eventType}`);
+  }
+}
+
+module.exports = {
+  teamsBot,
+  handleCallEvent,
+};
+
+
 module.exports.teamsBot = teamsBot;

@@ -24,6 +24,7 @@
         "@azure/ai-projects": "^1.0.0",
         "@azure/identity": "^4.12.0",
         "@microsoft/agents-hosting": "^0.2.14",
+        "@microsoft/microsoft-graph-client": "^3.0.7",
         "express": "^5.0.1"
     },
     "devDependencies": {

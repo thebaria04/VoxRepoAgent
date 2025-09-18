@@ -6,7 +6,7 @@ const express = require("express");
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { authorizeJWT, CloudAdapter, loadAuthConfigFromEnv } = require("@microsoft/agents-hosting");
-const { teamsBot } = require("./teamsBot");
+const { teamsBot, handleCallEvent } = require("./teamsBot");
 
 // Create authentication configuration
 const authConfig = loadAuthConfigFromEnv();
@@ -45,6 +45,17 @@ expressApp.post("/api/messages", async (req, res) => {
     await teamsBot.run(context);
   });
 });
+
+expressApp.post("/calling/callback", async (req, res) => {
+  try {
+    await handleCallEvent(req.body);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error handling call event:", error);
+    res.status(500).send("Error processing call event");
+  }
+});
+
 
 // Gracefully shutdown HTTP server
 ["exit", "uncaughtException", "SIGINT", "SIGTERM", "SIGUSR1", "SIGUSR2"].forEach((event) => {
