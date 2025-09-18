@@ -181,6 +181,7 @@ async function handleCallEvent(reqbody) {
   if (reqbody.value && reqbody.value.length > 0) {
     const notification = reqbody.value[0];
     const call = notification.resourceData;
+    const changeType = notification.changeType;
 
     if (call && call.state === "incoming") {
       console.log(`Incoming call detected with id: ${call.id}`);
