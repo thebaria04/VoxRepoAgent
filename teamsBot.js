@@ -8,6 +8,7 @@ const {
 const { version } = require("@microsoft/agents-hosting/package.json");
 const { DefaultAzureCredential } = require("@azure/identity");
 const { AIProjectClient } = require("@azure/ai-projects");
+const { Client } = require("@microsoft/microsoft-graph-client");
 const axios = require("axios");
 const qs = require("qs");
 
@@ -135,26 +136,43 @@ async function answerCall(callId, callbackUri, accessToken) {
   console.log(`Answered call ${callId}`);
 }
 
-// Play prompt ("Hi")
-async function playPrompt(callId, accessToken) {
-  const url = `https://graph.microsoft.com/v1.0/communications/calls/${callId}/playPrompt`;
-  const body = {
-    prompts: [
-      {
-        sequenceId: 1,
-        text: "Hi",
-        targetParticipant: null,
-      },
-    ],
-  };
-  await axios.post(url, body, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
+async function subscribeToAudioStream(callId, tenantId) {
+  // Get token for current tenant
+  const credential = new DefaultAzureCredential();
+  const tokenResponse = await credential.getToken("https://graph.microsoft.com/.default");
+  const accessToken = tokenResponse.token;
+
+  const client = Client.init({
+    authProvider: (done) => {
+      done(null, accessToken);
+    }
   });
 
-  console.log(`Played prompt "Hi" on call ${callId}`);
+  // Hypothetical Graph API endpoint to subscribe to media stream
+  // *** This endpoint may not exist or be supported in JS ***
+  const subscribeEndpoint = `/communications/calls/${callId}/subscribeToMedia`;
+
+  try {
+    const response = await client
+      .api(subscribeEndpoint)
+      .post({
+        mediaConfig: {
+          // specify audio (maybe audio only), encoding, etc.
+          "audio": {
+            "format": "pcm",
+            "samplingRate": 16000
+          }
+        },
+        streamDirection: "receive" // or "sendReceive"
+      });
+
+    // Response might give you a WebSocket URL or stream handle
+    console.log("Subscribed to audio stream:", response);
+    return response;  // depending on what is returned (URL / stream)
+  } catch (err) {
+    console.error("Error subscribing to audio stream:", err.response?.data || err.message);
+    throw err;
+  }
 }
 
 async function handleCallEvent(reqbody) {
@@ -174,15 +192,26 @@ async function handleCallEvent(reqbody) {
 
         const botCallbackUri = "https://voxrepobot-f9e6b8a2dva9b4ex.canadacentral-01.azurewebsites.net/calling/callback";
 
+        if (changeType === "created" && call.state === "incoming") {
+        // Answer the incoming call
+        console.log(`Incoming call detected with id: ${call.id}`);
         await answerCall(call.id, botCallbackUri, accessToken);
-        await playPrompt(call.id, accessToken);
-        console.log(`Call ${call.id} answered and prompt played.`);
-
-      } catch (error) {
-        console.error("Error handling call:", error.response?.data || error.message);
+        console.log(`Call ${call.id} answered.`);
+      } 
+      else if (changeType === "updated" && call.state === "established") {
+        
+        console.log(`Call ${call.id} established.`);
+        // Subscribe to the audio stream
+        const audioStream = await subscribeToAudioStream(call.id, accessToken);
+      } 
+      else {
+        console.log(`Unhandled call state: ${call.state}, changeType: ${changeType}`);
       }
+      } catch (error) {
+      console.error("Error handling call:", error.response?.data || error.message);
     }
   }
+}
 }
 
 module.exports = {
