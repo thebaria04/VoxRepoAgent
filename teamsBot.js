@@ -27,12 +27,11 @@ const project = new AIProjectClient(
     new DefaultAzureCredential()
 );
 
-const tenantId = process.env.tenantId;
 const clientId = process.env.clientId;
 const clientSecret = process.env.clientSecret;
 
 // Get access token for Microsoft Graph
-async function getAccessToken() {
+async function getAccessToken(tenantId) {
   const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
   const data = {
     client_id: clientId,
@@ -169,7 +168,9 @@ async function handleCallEvent(reqbody) {
       console.log(`Incoming call detected with id: ${call.id}`);
 
       try {
-        const accessToken = await getAccessToken();
+        const tenantId = call.tenantId; // from call event
+
+        const accessToken = await getAccessToken(tenantId);
 
         const botCallbackUri = "https://voxrepobot-f9e6b8a2dva9b4ex.canadacentral-01.azurewebsites.net/calling/callback";
 
