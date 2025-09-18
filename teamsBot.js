@@ -59,7 +59,26 @@ const project = new AIProjectClient(
     new DefaultAzureCredential()
 );
 
+const tenantId = process.env.TENANT_ID;
+const clientId = process.env.CLIENT_ID;
+const clientSecret = process.env.CLIENT_SECRET;
 
+// Get access token for Microsoft Graph
+async function getAccessToken() {
+  const tokenUrl = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`;
+  const data = {
+    client_id: clientId,
+    scope: "https://graph.microsoft.com/.default",
+    client_secret: clientSecret,
+    grant_type: "client_credentials",
+  };
+
+  const response = await axios.post(tokenUrl, qs.stringify(data), {
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  });
+
+  return response.data.access_token;
+}
 
 teamsBot.activity(ActivityTypes.Message, async (context, state) => {
   try {
@@ -128,28 +147,75 @@ teamsBot.activity(ActivityTypes.Message, async (context, state) => {
   }
 });
 
-async function handleCallEvent(reqBody) {
-  console.log("Received call event:", JSON.stringify(reqBody, null, 2));
-  
-  const eventType = reqBody.eventType || reqBody.type; // Graph calling event type varies
-  
-  switch(eventType) {
-    case "incomingCall":
-      // Accept or reject call logic here
-      console.log("Incoming call received.");
-      // You could trigger further actions, like answering the call via Graph API
-      break;
+// Answer the call
+async function answerCall(callId, callbackUri, accessToken) {
+  const url = `https://graph.microsoft.com/v1.0/communications/calls/${callId}/answer`;
+  const body = {
+    callbackUri: callbackUri,
+    mediaConfig: {
+      "@odata.type": "#microsoft.graph.serviceHostedMediaConfig",
+    },
+    acceptedModalities: ["audio"],
+  };
 
-    case "callConnected":
-      console.log("Call connected.");
-      break;
+  await axios.post(url, body, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
 
-    case "callDisconnected":
-      console.log("Call disconnected.");
-      break;
+  console.log(`Answered call ${callId}`);
+}
 
-    default:
-      console.log(`Unhandled call event type: ${eventType}`);
+// Play prompt ("Hi")
+async function playPrompt(callId, accessToken) {
+  const url = `https://graph.microsoft.com/v1.0/communications/calls/${callId}/playPrompt`;
+  const body = {
+    prompts: [
+      {
+        sequenceId: 1,
+        text: "Hi",
+        targetParticipant: null,
+      },
+    ],
+  };
+  await axios.post(url, body, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  console.log(`Played prompt "Hi" on call ${callId}`);
+}
+
+async function handleCallEvent(reqbody) {
+  console.log("Received call event:", JSON.stringify(reqbody, null, 2));
+
+  if (reqbody.value && reqbody.value.length > 0) {
+    const notification = reqbody.value[0];
+    const call = notification.resourceData;
+
+    if (call && call.state === "incoming") {
+      console.log(`Incoming call detected with id: ${call.id}`);
+
+      try {
+        const accessToken = await getAccessToken();
+
+        const botCallbackUri = "https://voxrepobot-f9e6b8a2dva9b4ex.canadacentral-01.azurewebsites.net/calling/callback";
+
+        await answerCall(call.id, botCallbackUri, accessToken);
+        await playPrompt(call.id, accessToken);
+
+        res.sendStatus(202);
+        return;
+      } catch (error) {
+        console.error("Error handling call:", error.response?.data || error.message);
+        res.status(500).send("Failed to answer call and play prompt");
+        return;
+      }
+    }
   }
 }
 
