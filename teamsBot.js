@@ -52,8 +52,8 @@ teamsBot.conversationUpdate("membersAdded", async (context, state) => {
 });
 
 // Azure AI Foundry integration
-const AZURE_ENDPOINT = "https://voxagentv1-resource.services.ai.azure.com/api/projects/voxagentv1";
-const AGENT_ID = "asst_ukOCHhemUOpnRriXbpnGflNg";
+const AZURE_ENDPOINT = "https://voxrepofoundry.services.ai.azure.com/api/projects/VoxRepoFoundryAI";
+const AGENT_ID = "asst_2nwCGYhb5MJTLEl5Vfna32SL";
 const project = new AIProjectClient(
     AZURE_ENDPOINT,
     new DefaultAzureCredential()
@@ -64,7 +64,7 @@ teamsBot.activity(ActivityTypes.Message, async (context, state) => {
 
     console.log('Inside activity message handler');
     await state.load(context, storage);
-    const agent = await project.agents.getAgent("asst_ukOCHhemUOpnRriXbpnGflNg");
+    const agent = await project.agents.getAgent("asst_2nwCGYhb5MJTLEl5Vfna32SL");
     console.log(`Retrieved agent: ${agent.name}`);
 
     const thread = await project.agents.threads.create();
