@@ -136,11 +136,7 @@ async function answerCall(callId, callbackUri, accessToken) {
   console.log(`Answered call ${callId}`);
 }
 
-async function subscribeToAudioStream(callId, tenantId) {
-  // Get token for current tenant
-  const credential = new DefaultAzureCredential();
-  const tokenResponse = await credential.getToken("https://graph.microsoft.com/.default");
-  const accessToken = tokenResponse.token;
+async function subscribeToAudioStream(callId, accessToken) {
 
   const client = Client.init({
     authProvider: (done) => {
@@ -202,8 +198,10 @@ async function handleCallEvent(reqbody) {
       else if (changeType === "updated" && call.state === "established") {
         
         console.log(`Call ${call.id} established.`);
-        // Subscribe to the audio stream
+        console.log('Subscribing to audio stream...');
+        // Subscribe to the audio stream        
         const audioStream = await subscribeToAudioStream(call.id, accessToken);
+        console.log('Subscribed to audio stream:', audioStream);
       } 
       else {
         console.log(`Unhandled call state: ${call.state}, changeType: ${changeType}`);
