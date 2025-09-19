@@ -136,40 +136,6 @@ async function answerCall(callId, callbackUri, accessToken) {
   console.log(`Answered call ${callId}`);
 }
 
-async function subscribeToAudioStream(callId, accessToken) {
-
-  const client = Client.init({
-    authProvider: (done) => {
-      done(null, accessToken);
-    }
-  });
-
-  // Hypothetical Graph API endpoint to subscribe to media stream
-  // *** This endpoint may not exist or be supported in JS ***
-  const subscribeEndpoint = `/communications/calls/${callId}/subscribeToMedia`;
-
-  try {
-    const response = await client
-      .api(subscribeEndpoint)
-      .post({
-        mediaConfig: {
-          // specify audio (maybe audio only), encoding, etc.
-          "audio": {
-            "format": "pcm",
-            "samplingRate": 16000
-          }
-        },
-        streamDirection: "receive" // or "sendReceive"
-      });
-
-    // Response might give you a WebSocket URL or stream handle
-    console.log("Subscribed to audio stream:", response);
-    return response;  // depending on what is returned (URL / stream)
-  } catch (err) {
-    console.error("Error subscribing to audio stream:", err.response?.data || err.message);
-    throw err;
-  }
-}
 
 async function handleCallEvent(reqbody) {
   console.log("Received call event:", JSON.stringify(reqbody, null, 2));
@@ -195,19 +161,14 @@ async function handleCallEvent(reqbody) {
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
 
-          if (changeType === "updated" && call.state === "established") {
+        this.logger.info('Joining meeting', { meetingId: meeting.id });
             
-            console.log(`Call ${call.id} established.`);
-            console.log('Subscribing to audio stream...');
-            // Subscribe to the audio stream        
-            const audioStream = await subscribeToAudioStream(call.id, accessToken);
-            console.log('Subscribed to audio stream:', audioStream);
-          }
-          else
-          {
-            console.log(`Call ${call.id} not established yet. Current state: ${call.state}`);
-          } 
-        }
+        // Initialize speech recognition for the meeting
+        await this.speechService.startContinuousRecognition(
+            (transcription) => this.handleSpeechTranscription(transcription, context)
+        );
+        
+      }
       else {
         console.log(`Unhandled call state: ${call.state}, changeType: ${changeType}`);
       }
