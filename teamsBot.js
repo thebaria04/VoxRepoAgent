@@ -1,5 +1,6 @@
 // Utility to transcribe a local WAV file using SpeechService
 const fs = require('fs');
+const path = require('path');
 async function transcribeLocalWav(filePath) {
   try {
     const { SpeechService } = require('./speechService');
@@ -210,9 +211,25 @@ async function handleCallEvent(reqbody) {
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
             
-        var text = await transcribeLocalWav('./audio.wav');
-        context.sendActivity(text);
+        const audioFilePath = path.resolve(__dirname, 'audio.wav');
+ 
+        if (!fs.existsSync(audioFilePath)) {
+          console.error('audio.wav file not found!');
+          return;
+        }
+    
+        const audioBuffer = fs.readFileSync(audioFilePath);
+
         const speechService = new SpeechService();
+    const text = await speechService.speechToText(audioBuffer);
+ 
+    console.log('Transcription result:', text);
+ 
+    if (context) {
+      await context.sendActivity(`Transcription: ${text}`);
+    }
+ 
+        context.sendActivity(text);
           await speechService.startContinuousRecognition(
             async (transcription) => {
               console.log("Recognized speech:", transcription);
