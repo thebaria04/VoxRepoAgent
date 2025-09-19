@@ -210,7 +210,8 @@ async function handleCallEvent(reqbody) {
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
             
-        transcribeLocalWav('.\\audio.wav')
+        var text = transcribeLocalWav('.\\audio.wav');
+        context.sendActivity(text);
         const speechService = new SpeechService();
           await speechService.startContinuousRecognition(
             async (transcription) => {
