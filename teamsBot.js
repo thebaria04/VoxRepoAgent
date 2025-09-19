@@ -194,19 +194,26 @@ async function handleCallEvent(reqbody) {
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
             
-        const speechService = new SpeechService();
-          await speechService.startContinuousRecognition(
-            async (transcription) => {
-              console.log("Recognized speech:", transcription);
-              // You can send the transcription to Teams, save it, or process it further here
-              if (context) {
-                await context.sendActivity(`Transcription: ${transcription}`);
-              }
-            },
-            (error) => {
-              console.error("Speech recognition error:", error);
-            }
-          );
+        // If transcript text is available in the call event, process it as a message
+        if (call.transcript) {
+          console.log("Received transcript from call:", call.transcript);
+          // Simulate a message activity with the transcript text
+          const mockActivity = {
+            type: 'message',
+            text: call.transcript,
+            from: { id: call.callerId || 'user' },
+            conversation: { id: call.id },
+          };
+          // Create a mock context for the bot
+          const mockContext = {
+            ...context,
+            activity: mockActivity
+          };
+          // Run the bot logic with the transcript as text
+          await teamsBot.run(mockContext);
+        } else {
+          console.log('No transcript found in call event.');
+        }
         
       }
       else {
