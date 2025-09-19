@@ -127,13 +127,14 @@ async function answerCall(callId, callbackUri, accessToken) {
     acceptedModalities: ["audio"],
   };
 
-  await axios.post(url, body, {
+  let response = await axios.post(url, body, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
     },
   });
 
+  console.log('Answer response status:', response.status);
   console.log(`Answered call ${callId}`);
 }
 
