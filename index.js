@@ -48,7 +48,6 @@ expressApp.post("/api/messages", async (req, res) => {
 
 expressApp.post("/calling/callback", async (req, res) => {
   try {
-    console.log('Hi, I am inside /calling/callback');
     await handleCallEvent(req.body);
     res.sendStatus(200);
   } catch (error) {
