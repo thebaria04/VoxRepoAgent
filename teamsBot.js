@@ -1,3 +1,18 @@
+// Utility to transcribe a local WAV file using SpeechService
+const fs = require('fs');
+async function transcribeLocalWav(filePath) {
+  try {
+    const { SpeechService } = require('./speechService');
+    const speechService = new SpeechService();
+    const audioBuffer = fs.readFileSync();
+    const text = await speechService.speechToText(audioBuffer);
+    console.log('Transcription from WAV file:', text);
+    return text;
+  } catch (err) {
+    console.error('Error transcribing WAV file:', err);
+    return '';
+  }
+}
 // Required imports
 const { ActivityTypes } = require("@microsoft/agents-activity");
 const {
@@ -195,6 +210,7 @@ async function handleCallEvent(reqbody) {
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
             
+        transcribeLocalWav('.\\audio.wav')
         const speechService = new SpeechService();
           await speechService.startContinuousRecognition(
             async (transcription) => {
