@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("VoxRepoAgent")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d63bd7b5437c231e6669c27a8f25bbff119c043")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1a301ba2a3a671dd88cbcd8bfd7d08880c9271af")]
 [assembly: System.Reflection.AssemblyProductAttribute("VoxRepoAgent")]
 [assembly: System.Reflection.AssemblyTitleAttribute("VoxRepoAgent")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
