@@ -38,14 +38,19 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     httpsOnly: true
     siteConfig: {
       alwaysOn: true
+      netFrameworkVersion: 'v8.0'
       appSettings: [
         {
           name: 'WEBSITE_RUN_FROM_PACKAGE'
           value: '1' // Run Azure App Service from a package file
         }
         {
-          name: 'WEBSITE_NODE_DEFAULT_VERSION'
-          value: '~18' // Set NodeJS version to 18.x for your site
+          name: 'ASPNETCORE_ENVIRONMENT'
+          value: 'Production'
+        }
+        {
+          name: 'DOTNET_VERSION'
+          value: '8.0' // Set .NET version to 8.0 for your site
         }
         {
           name: 'RUNNING_ON_AZURE'
