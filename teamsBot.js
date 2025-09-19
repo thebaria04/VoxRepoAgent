@@ -11,7 +11,7 @@ const { AIProjectClient } = require("@azure/ai-projects");
 const { Client } = require("@microsoft/microsoft-graph-client");
 const axios = require("axios");
 const qs = require("qs");
-const { SpeechService } = require('./services/speechService');
+const { SpeechService } = require('./speechService');
 
 // Bot setup
 const downloader = new AttachmentDownloader();
