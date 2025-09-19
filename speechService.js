@@ -246,7 +246,18 @@ class SpeechService {
                     this.isRecognizing = true;
                 },
                 (error) => {
-                    console.log('[ERROR] Failed to start continuous recognition', { error: error.message });
+                    // Enhanced error logging
+                    if (error) {
+                        console.log('[ERROR] Failed to start continuous recognition', {
+                            error: error.message,
+                            errorType: typeof error,
+                            errorString: String(error),
+                            errorStack: error.stack,
+                            errorObject: error
+                        });
+                    } else {
+                        console.log('[ERROR] Failed to start continuous recognition: error object is undefined or null');
+                    }
                     if (onErrorCallback) {
                         onErrorCallback(error);
                     }
