@@ -11,6 +11,7 @@ const { AIProjectClient } = require("@azure/ai-projects");
 const { Client } = require("@microsoft/microsoft-graph-client");
 const axios = require("axios");
 const qs = require("qs");
+const { SpeechService } = require('./services/speechService');
 
 // Bot setup
 const downloader = new AttachmentDownloader();
@@ -136,6 +137,38 @@ async function answerCall(callId, callbackUri, accessToken) {
   console.log(`Answered call ${callId}`);
 }
 
+async function handleSpeechTranscription(transcription, context) {
+        try {
+            if (!transcription || transcription.trim().length === 0) {
+                return;
+            }
+
+            this.logger.info('Processing speech transcription', { 
+                transcription: transcription,
+                userId: context.activity.from.id 
+            });
+
+            // Process the transcription as if it were a text message
+            const mockActivity = {
+                ...context.activity,
+                text: transcription,
+                type: 'message'
+            };
+
+            const mockContext = {
+                ...context,
+                activity: mockActivity
+            };
+
+            await this.handleTextMessage(mockContext);
+            
+        } catch (error) {
+            this.logger.error('Error handling speech transcription', { 
+                error: error.message,
+                transcription: transcription 
+            });
+        }
+      }
 
 async function handleCallEvent(reqbody) {
   console.log("Received call event:", JSON.stringify(reqbody, null, 2));
@@ -161,12 +194,21 @@ async function handleCallEvent(reqbody) {
         await answerCall(call.id, botCallbackUri, accessToken);
         console.log(`Call ${call.id} answered.`);
 
-        this.logger.info('Joining meeting', { meetingId: meeting.id });
+        console.log('Joining meeting', { meetingId: meeting.id });
             
-        // Initialize speech recognition for the meeting
-        await this.speechService.startContinuousRecognition(
-            (transcription) => this.handleSpeechTranscription(transcription, context)
-        );
+        const speechService = new SpeechService();
+          await speechService.startContinuousRecognition(
+            async (transcription) => {
+              console.log("Recognized speech:", transcription);
+              // You can send the transcription to Teams, save it, or process it further here
+              if (context) {
+                await context.sendActivity(`Transcription: ${transcription}`);
+              }
+            },
+            (error) => {
+              console.error("Speech recognition error:", error);
+            }
+          );
         
       }
       else {
