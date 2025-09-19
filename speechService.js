@@ -1,9 +1,7 @@
 const sdk = require('microsoft-cognitiveservices-speech-sdk');
-const { Logger } = require('./logger');
 
 class SpeechService {
     constructor() {
-        this.logger = new Logger();
         this.speechConfig = null;
         this.recognizer = null;
         this.synthesizer = null;
@@ -16,7 +14,7 @@ class SpeechService {
         try {
             // Skip speech configuration in test environment
             if (process.env.NODE_ENV === 'test') {
-                this.logger.info('Skipping speech service configuration in test environment');
+                console.log('Skipping speech service configuration in test environment');
                 this.speechConfig = {
                     speechRecognitionLanguage: 'en-US',
                     speechSynthesisVoiceName: 'en-US-JennyNeural'
@@ -39,14 +37,14 @@ class SpeechService {
             // Configure output format for better quality
             this.speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio16Khz32KBitRateMonoMp3;
             
-            this.logger.info('Speech service configuration initialized', {
+            console.log('[INFO] Speech service configuration initialized', {
                 region: speechRegion,
                 language: this.speechConfig.speechRecognitionLanguage,
                 voice: this.speechConfig.speechSynthesisVoiceName
             });
             
         } catch (error) {
-            this.logger.error('Failed to initialize speech configuration', {
+            console.log('[ERROR] Failed to initialize speech configuration', {
                 error: error.message,
                 stack: error.stack
             });
@@ -86,20 +84,20 @@ class SpeechService {
 
                 // Set up event handlers
                 recognizer.recognizing = (s, e) => {
-                    this.logger.debug('Speech recognizing', { text: e.result.text });
+                    console.log('[DEBUG] Speech recognizing', { text: e.result.text });
                 };
 
                 recognizer.recognized = (s, e) => {
                     if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
                         recognizedText = e.result.text;
-                        this.logger.info('Speech recognized', { text: recognizedText });
+                        console.log('[INFO] Speech recognized', { text: recognizedText });
                     } else if (e.result.reason === sdk.ResultReason.NoMatch) {
-                        this.logger.warn('Speech not recognized - no match');
+                        console.log('[WARN] Speech not recognized - no match');
                     }
                 };
 
                 recognizer.canceled = (s, e) => {
-                    this.logger.error('Speech recognition canceled', {
+                    console.log('[ERROR] Speech recognition canceled', {
                         reason: e.reason,
                         errorDetails: e.errorDetails
                     });
@@ -113,7 +111,7 @@ class SpeechService {
                 };
 
                 recognizer.sessionStopped = (s, e) => {
-                    this.logger.debug('Speech recognition session stopped');
+                    console.log('[DEBUG] Speech recognition session stopped');
                     recognizer.close();
                     resolve(recognizedText);
                 };
@@ -131,7 +129,7 @@ class SpeechService {
                 );
 
             } catch (error) {
-                this.logger.error('Error in speechToText', { error: error.message });
+                console.log('[ERROR] Error in speechToText', { error: error.message });
                 reject(error);
             }
         });
@@ -166,7 +164,7 @@ class SpeechService {
                     ssml,
                     (result) => {
                         if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
-                            this.logger.info('Speech synthesis completed', {
+                            console.log('[INFO] Speech synthesis completed', {
                                 textLength: text.length,
                                 audioLength: result.audioData.byteLength
                             });
@@ -175,7 +173,7 @@ class SpeechService {
                             const audioBuffer = Buffer.from(result.audioData);
                             resolve(audioBuffer);
                         } else {
-                            this.logger.error('Speech synthesis failed', {
+                            console.log('[ERROR] Speech synthesis failed', {
                                 reason: result.reason,
                                 errorDetails: result.errorDetails
                             });
@@ -184,14 +182,14 @@ class SpeechService {
                         synthesizer.close();
                     },
                     (error) => {
-                        this.logger.error('Speech synthesis error', { error: error.message });
+                        console.log('[ERROR] Speech synthesis error', { error: error.message });
                         synthesizer.close();
                         reject(error);
                     }
                 );
 
             } catch (error) {
-                this.logger.error('Error in textToSpeech', { error: error.message });
+                console.log('[ERROR] Error in textToSpeech', { error: error.message });
                 reject(error);
             }
         });
@@ -200,7 +198,7 @@ class SpeechService {
     async startContinuousRecognition(onRecognizedCallback, onErrorCallback = null) {
         try {
             if (this.isRecognizing) {
-                this.logger.warn('Continuous recognition is already running');
+                console.log('[WARN] Continuous recognition is already running');
                 return;
             }
 
@@ -217,7 +215,7 @@ class SpeechService {
             // Set up event handlers
             this.recognizer.recognized = (s, e) => {
                 if (e.result.reason === sdk.ResultReason.RecognizedSpeech) {
-                    this.logger.info('Continuous speech recognized', { text: e.result.text });
+                    console.log('[INFO] Continuous speech recognized', { text: e.result.text });
                     if (onRecognizedCallback) {
                         onRecognizedCallback(e.result.text);
                     }
@@ -225,7 +223,7 @@ class SpeechService {
             };
 
             this.recognizer.canceled = (s, e) => {
-                this.logger.error('Continuous recognition canceled', {
+                console.log('[ERROR] Continuous recognition canceled', {
                     reason: e.reason,
                     errorDetails: e.errorDetails
                 });
@@ -237,18 +235,18 @@ class SpeechService {
             };
 
             this.recognizer.sessionStopped = (s, e) => {
-                this.logger.info('Continuous recognition session stopped');
+                console.log('[INFO] Continuous recognition session stopped');
                 this.isRecognizing = false;
             };
 
             // Start continuous recognition
             this.recognizer.startContinuousRecognitionAsync(
                 () => {
-                    this.logger.info('Continuous speech recognition started');
+                    console.log('[INFO] Continuous speech recognition started');
                     this.isRecognizing = true;
                 },
                 (error) => {
-                    this.logger.error('Failed to start continuous recognition', { error: error.message });
+                    console.log('[ERROR] Failed to start continuous recognition', { error: error.message });
                     if (onErrorCallback) {
                         onErrorCallback(error);
                     }
@@ -256,7 +254,7 @@ class SpeechService {
             );
 
         } catch (error) {
-            this.logger.error('Error starting continuous recognition', { error: error.message });
+            console.log('[ERROR] Error starting continuous recognition', { error: error.message });
             throw error;
         }
     }
@@ -264,25 +262,25 @@ class SpeechService {
     async stopContinuousRecognition() {
         try {
             if (!this.isRecognizing || !this.recognizer) {
-                this.logger.warn('No continuous recognition to stop');
+                console.log('[WARN] No continuous recognition to stop');
                 return;
             }
 
             this.recognizer.stopContinuousRecognitionAsync(
                 () => {
-                    this.logger.info('Continuous recognition stopped');
+                    console.log('[INFO] Continuous recognition stopped');
                     this.isRecognizing = false;
                     this.recognizer.close();
                     this.recognizer = null;
                 },
                 (error) => {
-                    this.logger.error('Error stopping continuous recognition', { error: error.message });
+                    console.log('[ERROR] Error stopping continuous recognition', { error: error.message });
                     this.isRecognizing = false;
                 }
             );
 
         } catch (error) {
-            this.logger.error('Error in stopContinuousRecognition', { error: error.message });
+            console.log('[ERROR] Error in stopContinuousRecognition', { error: error.message });
             throw error;
         }
     }
@@ -318,9 +316,9 @@ class SpeechService {
         try {
             const fs = require('fs').promises;
             await fs.writeFile(filePath, audioBuffer);
-            this.logger.info('Audio saved to file', { filePath, size: audioBuffer.length });
+            console.log('[INFO] Audio saved to file', { filePath, size: audioBuffer.length });
         } catch (error) {
-            this.logger.error('Error saving audio to file', { error: error.message, filePath });
+            console.log('[ERROR] Error saving audio to file', { error: error.message, filePath });
             throw error;
         }
     }
@@ -340,9 +338,9 @@ class SpeechService {
                 this.speechConfig = null;
             }
             
-            this.logger.info('Speech service disposed');
+            console.log('[INFO] Speech service disposed');
         } catch (error) {
-            this.logger.error('Error disposing speech service', { error: error.message });
+            console.log('[ERROR] Error disposing speech service', { error: error.message });
         }
     }
 }
