@@ -7,10 +7,11 @@ const express = require("express");
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 const { authorizeJWT, CloudAdapter, loadAuthConfigFromEnv } = require("@microsoft/agents-hosting");
 const { teamsBot, handleCallEvent } = require("./teamsBot");
+const { SpeechService } = require('./speechService');
 
 // Create authentication configuration
 const authConfig = loadAuthConfigFromEnv();
-
+const speechService = new SpeechService();
 // Create adapter
 const adapter = new CloudAdapter(authConfig);
 console.log('Created CloudAdapter');
